@@ -36,6 +36,23 @@
     })
   );
 
+  /* ---------- vídeo de novidades: só toca quando aparece na tela ---------- */
+  const video = $('.phone__video');
+  if (video) {
+    if (reduce) {
+      video.controls = true;
+    } else {
+      new IntersectionObserver(([en]) => {
+        if (en.isIntersecting) {
+          if (video.preload === 'none') video.preload = 'auto';
+          video.play().catch(() => (video.controls = true));
+        } else {
+          video.pause();
+        }
+      }, { threshold: 0.35 }).observe(video);
+    }
+  }
+
   const loader = $('.loader');
   const hideLoader = () => loader && loader.remove();
 
@@ -281,7 +298,7 @@
   gsap.from('.stat', { y: 40, autoAlpha: 0, stagger: 0.12, duration: 1, ease: 'power3.out', scrollTrigger: { trigger: '.stats', start: 'top 85%' } });
 
   /* ---------- títulos de seção ---------- */
-  $$('.catalog__intro h2, .space__title, .delivery__title, .gallery__head h2, .shop h2, .visit__info h2, .faq__title').forEach((h) => {
+  $$('.catalog__intro h2, .showcase__head h2, .news__text h2, .showcase__big, .space__title, .delivery__title, .gallery__head h2, .shop h2, .visit__info h2, .faq__title').forEach((h) => {
     gsap.from(h, {
       yPercent: 30, autoAlpha: 0, duration: 1.1, ease: 'expo.out',
       scrollTrigger: { trigger: h, start: 'top 88%' },
@@ -343,6 +360,57 @@
     });
   }
 
+  /* ---------- vitrine: parede de produtos andando com o scroll ---------- */
+  gsap.from('.pillars li', {
+    y: 40, autoAlpha: 0, stagger: 0.1, duration: 0.9, ease: 'power3.out',
+    scrollTrigger: { trigger: '.pillars', start: 'top 85%' },
+  });
+  /* cada fileira roda em loop infinito; o scroll acelera, o hover desacelera */
+  $$('.wall__row').forEach((row) => {
+    const speed = Number(row.dataset.speed);
+    const items = [...row.children];
+    items.forEach((el) => {
+      const c = el.cloneNode(true);
+      c.setAttribute('aria-hidden', 'true');
+      $$('img', c).forEach((img) => (img.alt = ''));
+      row.appendChild(c);
+    });
+    const firstClone = row.children[items.length];
+    const loop = gsap.timeline();
+    const build = () => {
+      const d = firstClone.offsetLeft - items[0].offsetLeft;
+      const dur = d / (48 * Math.abs(speed));
+      loop.clear().add(speed < 0
+        ? gsap.fromTo(row, { x: 0 }, { x: -d, duration: dur, ease: 'none', repeat: -1 })
+        : gsap.fromTo(row, { x: -d }, { x: 0, duration: dur, ease: 'none', repeat: -1 }));
+    };
+    build();
+    ScrollTrigger.addEventListener('refreshInit', build);
+    loops.push(loop);
+    if (finePointer) {
+      row.addEventListener('pointerenter', () => gsap.to(loop, { timeScale: 0.15, duration: 0.6, overwrite: true }));
+      row.addEventListener('pointerleave', () => gsap.to(loop, { timeScale: 1, duration: 0.6, overwrite: true }));
+    }
+  });
+  gsap.from('.tile', {
+    scale: 0.85, autoAlpha: 0, duration: 0.9, ease: 'power3.out', stagger: { each: 0.03, from: 'random' },
+    scrollTrigger: { trigger: '.wall', start: 'top 85%' },
+  });
+
+  /* ---------- novidades ---------- */
+  gsap.fromTo('.news__marquee span', { xPercent: 0 }, {
+    xPercent: -35, ease: 'none',
+    scrollTrigger: { trigger: '.news', start: 'top bottom', end: 'bottom top', scrub: true },
+  });
+  gsap.fromTo('.phone', { rotate: -10, scale: 0.82, y: 80 }, {
+    rotate: 3, scale: 1, y: 0, ease: 'none',
+    scrollTrigger: { trigger: '.news', start: 'top 85%', end: 'center 55%', scrub: 0.6 },
+  });
+  gsap.from('.phone__badge', {
+    scale: 0, rotate: -40, duration: 0.9, ease: 'back.out(2.2)',
+    scrollTrigger: { trigger: '.phone', start: 'top 60%' },
+  });
+
   /* ---------- espaço & café ---------- */
   gsap.fromTo('.space__img img', { yPercent: -8 }, {
     yPercent: 8, ease: 'none',
@@ -377,14 +445,18 @@
     };
     path.style.strokeDasharray = len;
     place(0);
+    const home = $('.route__home-in');
+    const pop = gsap.from(home, { scale: 0, transformOrigin: '50% 50%', duration: 0.6, ease: 'back.out(2.4)', paused: true });
     const o = { p: 0 };
+    // termina quando o mapa ainda está bem visível, antes de a pessoa passar por ele
     gsap.to(o, {
-      p: 1, ease: 'none', onUpdate: () => place(o.p),
-      scrollTrigger: { trigger: '.route', start: 'top 80%', end: 'bottom 45%', scrub: 0.6 },
-    });
-    gsap.from('.route__home', {
-      scale: 0, transformOrigin: 'center', duration: 0.6, ease: 'back.out(2)',
-      scrollTrigger: { trigger: '.route', start: 'bottom 50%', toggleActions: 'play none none reverse' },
+      p: 1, ease: 'power1.inOut',
+      onUpdate: () => {
+        place(o.p);
+        if (o.p > 0.92 && pop.progress() === 0) pop.play();
+        else if (o.p < 0.85 && pop.progress() > 0) pop.reverse();
+      },
+      scrollTrigger: { trigger: '.route', start: 'top 92%', end: 'center 62%', scrub: 0.4 },
     });
   }
   gsap.from('.step', {

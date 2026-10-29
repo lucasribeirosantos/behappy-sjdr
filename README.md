@@ -10,15 +10,13 @@ npx http-server@14.1.1 -p 5173
 
 ## Antes de publicar: dados a confirmar
 
-Procure por `EDITAR` e `99999` no `index.html`.
+Endereço (Praça Severiano de Resende, 110 · Centro) e WhatsApp ((32) 98892-6577) já estão aplicados. Falta confirmar:
 
 | O quê | Onde | Valor provisório |
 |---|---|---|
 | Domínio | `index.html` (canonical, og, JSON-LD), `robots.txt`, `sitemap.xml` | `behappysjdr.com.br` |
-| WhatsApp | todos os links `wa.me/5532999999999` e o telefone no JSON-LD | `(32) 99999-9999` |
-| Endereço (rua e número, CEP) | seção "Visite" + `streetAddress` no JSON-LD | "Centro Histórico" |
-| Coordenadas exatas da loja | `geo.position`, `ICBM`, `geo` no JSON-LD | centro de SJDR |
-| Horário | seção "Visite" + `openingHoursSpecification` | Seg–Sáb 9h–19h |
+| Horário | seção "Visite" + `openingHoursSpecification` + `llms.txt` | Seg–Sáb 9h–19h |
+| CEP | `address` no JSON-LD | não informado |
 | Loja online da franquia | botão "Ir para a loja online" + rodapé | `behappytabacaria.com.br` |
 | Bairros atendidos no delivery | lista `.hoods` | Centro, Matosinhos, Fábricas… |
 | Iframe do mapa | `.visit__map iframe` | busca pelo nome; troque pelo embed oficial do Perfil da Empresa |
@@ -36,11 +34,15 @@ Mantenha os mesmos nome, endereço e telefone (NAP) idênticos no site, no Googl
 
 ## Melhorias recomendadas
 
-- **Logo em vetor (SVG)**: o PNG atual tem só 98×108 px de área útil. Peça o SVG da franquia.
 - **Foto do hero em alta resolução**: `foto principal.jpg` tem 1024 px de largura. Uma versão com 2000 px ou mais fica nítida em telas grandes.
-- Converter as imagens para WebP/AVIF quando for publicar.
+
+## Fotos de produto
+
+As originais ficam em `imagens produtos/` (fora do site). As usadas estão otimizadas em `assets/produtos/` (WebP, até 900 px). Ficaram de fora de propósito, para não associar a página a drogas e evitar redução de alcance: bongs, waterpipe, dichavador, piteiras de vidro, slicks/cuias de silicone, blunt wraps, tesouras e o isqueiro Clipper com estampa de folha.
 
 ## Estrutura
+
+`imagens produtos/` (originais, ~180 MB) está no `.gitignore` para não pesar o repositório.
 
 ```
 index.html        página + SEO + JSON-LD
